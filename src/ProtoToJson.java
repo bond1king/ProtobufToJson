@@ -9,7 +9,7 @@ public class ProtoToJson(){
 //msg is any protobuf object 
 
 public static String generateJsonFromMsg(GeneratedMessage msg) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, NoSuchMethodException, SecurityException{
-		Map<FieldDescriptor,Object> allFields = msg.getAllFields();
+	Map<FieldDescriptor,Object> allFields = msg.getAllFields();
 		StringBuilder sb = new StringBuilder();
 		for(FieldDescriptor field: allFields.keySet()){
 			sb.append("\"" + field.getName() +"\"");
@@ -30,9 +30,23 @@ public static String generateJsonFromMsg(GeneratedMessage msg) throws IllegalAcc
 					if(!isRepeated)
 						 sb.append("}");
 				}else {
-					if(isRepeated)
-						sb.append(value);
-					else
+					if(isRepeated){
+						sb.append("[");
+						List list = (List)value;
+						int size = list.size();
+						for(int i=0;i<size;i++){
+							if(list.get(i) instanceof GeneratedMessage)
+								sb.append("{").append(generateJsonFromMsg((GeneratedMessage)(list.get(i)))).append("}");
+							else 
+								sb.append(list.get(i));
+							if(i!=size-1){
+								sb.append(",");
+							}
+							
+						}
+						sb.append("]");
+						//sb.append(value);
+					} else
 						sb.append("\"" + value + "\"");
 				}
 			}catch(Exception e){
@@ -41,8 +55,7 @@ public static String generateJsonFromMsg(GeneratedMessage msg) throws IllegalAcc
 			
 			sb.append(",");
 		}
+		//System.out.println("************************************************ "+sb.toString());
 		return sb.deleteCharAt(sb.length() -1).toString();
-		
-	}
-
+}
 }
